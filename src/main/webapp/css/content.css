@@ -1,0 +1,41 @@
+table { font-family: arial, helvetica; font-size:10pt; font-weight: normal; }
+.content-document { font-family: arial, helvetica; font-size:10pt; font-weight: normal; color: #222222; }
+.content-container { color: #222222; background-color:#ecfdfd;}
+.content-header { border: 1px solid #4297d7; background: #2191c0 url(../jquery/css/start/images/ui-bg_gloss-wave_75_2191c0_500x100.png) 50% 50% repeat-x; color: #eaf5f7; font-weight: bold; }
+.content-body { border: 1px solid #a6c9e2; padding: 5px; text-align: left; vertical-align: top;}
+
+.big_error { font-size:150%; font-weight:bold; color:#FF5555; }
+.changed   { background-color:#FDFFC4; }
+
+.sched_list     { border-collapse:collapse; border: 1px solid #4297d7; }
+.sched_title    { padding:0px 10px 0px 10px;  border-bottom: 1px solid #4297d7; background: #2191c0 url(../jquery/css/start/images/ui-bg_gloss-wave_75_2191c0_500x100.png) 50% 50% repeat-x; color: #eaf5f7; font-weight: bold; }
+.sched_head     { font-weight:bold; padding:0px 10px 0px 10px; border-bottom: 1px solid #4297d7; border-right: 1px solid #4297d7;  }
+.sched_add      {  border-bottom: 1px solid #4297d7; }
+.sched_foot     { padding:10px 5px 5px 5px; vertical-align:middle; }
+.sched_cell     { padding-left:5px; vertical-align:middle; border-bottom: 1px solid #a6c9e2; }
+.schedule_bar_container { width:100%;  height:6px; line-height:4px; font-size:4px; }
+.schedule_bar { }
+.unoccupied { background: #888888 url(grey_gloss-line2.png) 50% 50% repeat-x; }
+.occupied   { background: #339933 url(green_gloss-line2.png) 50% 50% repeat-x;  }
+
+.sched_name     { }
+.sched_affects  { }
+.sched_period   { text-align:center; }
+.sched_percent  { }
+.sched_submit   { font-size: 8pt; }
+.sched_revert   { font-size: 8pt; }
+
+.sched_name_field  { width:150px; }
+.sched_date_field  { width:80px; }
+.sched_time_field  { width:35px; }
+.sched_check_field { width:16px; }
+
+.sched_add_section         { text-align:left; padding-top:10px;}
+.sched_save_cancel_section { text-align:right; padding-top:5px;}
+
+.sched_warning  { color: #CC5555; }
+
+.sched_results  { border-bottom: 1px solid #a6c9e2; padding-left:5px; vertical-align:middle;}
+
+span.HasSchedules a { color:blue; }
+.mybutton { font-size: 8pt; }
