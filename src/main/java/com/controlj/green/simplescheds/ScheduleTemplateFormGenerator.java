@@ -146,9 +146,9 @@ public class ScheduleTemplateFormGenerator implements ScheduleTemplateHandler
       append("</TEXTAREA>");
    }
 
-   protected void addWildCardRule(DateRule wildRule)
+   protected void addWildCardRule(DateRule wildRule, WeekRule weekRule)
    {
-      append("<input class='sched_wild_field' type='text' name='"+createFieldName(FIELD_START_DATE)+"' value='"+toDateString(wildRule)+"'/>");
+      append("<input class='sched_wild_field' type='text' name='"+createFieldName(FIELD_START_DATE)+"' value='"+toDateString(wildRule, weekRule)+"'/>");
    }
 
    protected void addDateRules(DateRule startDateRule, SimpleTime startTime, DateRule endDateRule, SimpleTime endTime)
@@ -332,7 +332,7 @@ public class ScheduleTemplateFormGenerator implements ScheduleTemplateHandler
    {
       beginSchedule();
       beginCell("sched_affects");
-      addWildCardRule(wildcard.getDateRule());
+      addWildCardRule(wildcard.getDateRule(), wildcard.getWeekRule());
       endCell();
       beginCell("sched_period");
       addPeriodFormElements(wildcard.getPeriods());
@@ -375,6 +375,11 @@ public class ScheduleTemplateFormGenerator implements ScheduleTemplateHandler
    private String toDateString(DateRule dateRule)
    {
       return new BacnetDateRuleFormat().format(dateRule);
+   }
+
+   private String toDateString(DateRule dateRule, WeekRule weekRule)
+   {
+      return new BacnetDateRuleFormat().format(dateRule, 1, weekRule);
    }
 
    private String toTimeString(SimpleTime dateTime)

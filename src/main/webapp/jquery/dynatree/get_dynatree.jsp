@@ -16,9 +16,11 @@
 <%@ page import="com.controlj.green.addonsupport.access.schedule.Schedule" %>
 <%@ page import="com.controlj.green.addonsupport.access.schedule.ScheduleCategory" %>
 <%@ page import="com.controlj.green.addonsupport.access.aspect.Schedulable" %>
+<%@ page import="com.controlj.green.addonsupport.access.aspect.Group" %>
 
 <%=getTreeJson(request, response)%>
 <%!
+
    public String getTreeJson(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException
    {
        resp.setContentType("application/json");
@@ -26,17 +28,7 @@
        final String id = req.getParameter("id");
        final boolean stopAtEquipment = "true".equals(req.getParameter("stop_at_equipment"));
 
-       String treeString = req.getParameter("type");
-       final SystemTree tree;
-       if (treeString == null || treeString.equals("geo")) {
-           tree = SystemTree.Geographic;
-       } else if (treeString.equals("net")) {
-           tree = SystemTree.Network;
-       } else if (treeString.equals("grp")) {
-           tree = SystemTree.Schedule_Group;
-       } else {
-           tree = SystemTree.Geographic;
-       }
+       final String treeString = req.getParameter("type");
 
        final PrintWriter writer = resp.getWriter();
 
@@ -47,12 +39,17 @@
                @Override
                public void execute(@NotNull SystemAccess access) throws Exception {
 
+                  SystemTree tree = determineBaseTreeType(treeString);
+
                    JSONArray jsonArray = new JSONArray();
                    boolean root = (id==null);
                    if (root)
                    {
                       Location rootLocation = access.getTree(tree).getRoot();
                       JSONObject json = createRootNode(rootLocation, stopAtEquipment, access);
+                      if (treeString.equals("schedule"))
+                         addScheduleGroupRoot(json, access);
+
                       jsonArray.put(json);
                    }
                    else
@@ -64,6 +61,7 @@
                    jsonArray.write(writer);
 
                }
+
            });
        }
        catch (InvalidConnectionRequestException e)
@@ -81,12 +79,37 @@
       return "";
    }
 
+   private void addScheduleGroupRoot(JSONObject json, SystemAccess access)
+         throws JSONException, UnresolvableException
+   {
+      Location groupRoot = access.getTree(SystemTree.Schedule_Group).getRoot();
+      JSONArray children = json.getJSONArray("children");
+      children.put(createNode(groupRoot, hasChildren(groupRoot, true), access));
+   }
+
+   private SystemTree determineBaseTreeType(String treeString)
+   {
+      SystemTree tree;
+      if (treeString == null || treeString.equals("geo")) {
+          tree = SystemTree.Geographic;
+      } else if (treeString.equals("net")) {
+          tree = SystemTree.Network;
+      } else if (treeString.equals("grp")) {
+          tree = SystemTree.Schedule_Group;
+      } else if (treeString.equals("schedule")) {
+          tree = SystemTree.Geographic;
+      } else {
+          tree = SystemTree.Geographic;
+      }
+      return tree;
+   }
+
    private JSONArray getChildArray(Location location, boolean stopAtEquipment, SystemAccess access) throws JSONException
    {
       JSONArray arrayData = new JSONArray();
 
-      Collection<Location> children = location.getChildren(LocationSort.PRESENTATION);
-
+      Collection<Location> children = location.getChildren();
+      System.out.println("for "+location.getDisplayPath()+" got "+children.size());
       for (Location child : children)
       {
           JSONObject next = createNode(child, hasChildren(child, stopAtEquipment), access);
@@ -109,6 +132,7 @@
       JSONObject next = new JSONObject();
       next.put("title",getText(node));
       next.put("key", node.getTransientLookupString());
+      next.put("tree", node.getTree());
       next.put("path", node.getDisplayPath());
 
       if(hasSchedules(node, access))

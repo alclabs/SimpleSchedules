@@ -10,7 +10,7 @@ version = '1.0'
 dependencies 
 {
    compile 'org.json:json:20080701'
-   compile 'junit:junit:4.8.1'
+   testCompile 'junit:junit:4.8.1'
    providedCompile 'com.controlj.green:directaccess-api-addon:1.1.0.+'
    providedCompile 'com.controlj.green:bacnet-api-addon:1.1.0.+'
    providedCompile 'javax.servlet:servlet-api:2.5'

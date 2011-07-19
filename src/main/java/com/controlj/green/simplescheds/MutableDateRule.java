@@ -19,6 +19,8 @@ public class MutableDateRule implements DateRule, SimpleDate
    DayRule dayRule=DayRule.FIXED;
    DayOfWeek dayOfWeek;
 
+   int week;
+   WeekRule weekRule;
 
    @Override
    public int getDay()
@@ -122,6 +124,28 @@ public class MutableDateRule implements DateRule, SimpleDate
    public MutableDateRule setDayOfWeek(DayOfWeek dayOfWeek)
    {
       this.dayOfWeek = dayOfWeek;
+      return this;
+   }
+
+   public int getWeek()
+   {
+      return week;
+   }
+
+   public MutableDateRule setWeek(int week)
+   {
+      this.week=week;
+      return this;
+   }
+
+   public WeekRule getWeekRule()
+   {
+      return weekRule;
+   }
+
+   public MutableDateRule setWeekRule(WeekRule weekRule)
+   {
+      this.weekRule = weekRule;
       return this;
    }
 

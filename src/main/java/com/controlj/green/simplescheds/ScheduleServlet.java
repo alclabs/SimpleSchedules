@@ -5,10 +5,6 @@ import com.controlj.green.addonsupport.access.*;
 import com.controlj.green.addonsupport.access.aspect.Schedulable;
 import com.controlj.green.addonsupport.access.schedule.*;
 import com.controlj.green.addonsupport.access.value.WritePrivilegeException;
-import com.controlj.green.addonsupport.bacnet.data.datetime.DateRuleFactory;
-import com.controlj.green.addonsupport.bacnet.data.datetime.SimpleDate;
-import com.controlj.green.addonsupport.bacnet.data.datetime.TimeRule;
-import com.controlj.green.addonsupport.bacnet.data.datetime.TimeRuleFactory;
 import org.jetbrains.annotations.NotNull;
 
 import javax.servlet.ServletException;
@@ -31,7 +27,7 @@ public class ScheduleServlet extends HttpServlet
          SystemConnection connection = DirectAccess.getDirectAccess().getUserSystemConnection(req);
          WriteAction writeSchedules = new WriteAction()
          {
-            
+
             @Override
             public void execute(@NotNull final WritableSystemAccess access) throws Exception
             {

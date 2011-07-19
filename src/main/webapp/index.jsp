@@ -3,37 +3,19 @@
   <head>
      <title>Simple Schedules</title>
 
-<%--
-
-     <link type="text/css" href="jquery/css/start/jquery-ui-1.8.9.custom.css" rel="stylesheet" />
-     <script type="text/javascript" src="dynatree-1.1.0/jquery/jquery.js"></script>
-     <script type="text/javascript" src="dynatree-1.1.0/jquery/jquery-ui.custom.js"></script>
-     <script type="text/javascript" src="dynatree-1.1.0/jquery/jquery.cookie.js"></script>
-
-     <link type="text/css" href="dynatree-1.1.0/src/skin/ui.dynatree.css">
-     <script type="text/javascript" src="dynatree-1.1.0/src/jquery.dynatree.js"></script>
-     <!-- dyntree from http://code.google.com/p/dynatree/ -->
-
---%>
-
      <link type="text/css" href="jquery/css/start/jquery-ui-1.8.9.custom.css" rel="stylesheet" />
      <script type="text/javascript" src="jquery/jquery-1.4.4.min.js"></script>
      <script type="text/javascript" src="jquery/jquery-ui-1.8.9.custom.min.js"></script>
      <script type="text/javascript" src="jquery/jquery.cookie.js"></script>
 
+     <!-- dyntree from http://code.google.com/p/dynatree/ -->
      <link type="text/css" href="jquery/dynatree/skin/ui.dynatree.css"  rel="stylesheet">
      <script type="text/javascript" src="jquery/dynatree/jquery.dynatree.min.js"></script>
-     <!-- dyntree from http://code.google.com/p/dynatree/ -->
 
      <link type="text/css" href="css/content.css"  rel="stylesheet">
   </head>
 
   <body class="content-document">
-   <div>
-     This application is intended to make entering schedules easier and faster.
-     <br>
-     The schedule changes will NOT be downloaded. Please login to the main application and download schedules for these changes to take effect.
-   </div>
    <div style="position:relative;">
    <div class="content-container" style="margin-top:5px; position:relative; float:left; margin-top:5px;">
      <div id="treetitle"  class="content-header">Select Location</div>
@@ -189,7 +171,7 @@
             
              initAjax: {
                  url: "jquery/dynatree/get_dynatree.jsp",
-                 data: { type:'geo',
+                 data: { type:'schedule',
                          stop_at_equipment:'true'
                        }
              },
@@ -199,7 +181,7 @@
                     url: "jquery/dynatree/get_dynatree.jsp",
                      data: {
                          id:dtnode.data.key,
-                         type: 'geo',
+                         type: 'schedule',
                          stop_at_equipment:'true'
                      }
                  })

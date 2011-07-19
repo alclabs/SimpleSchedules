@@ -352,6 +352,11 @@ public class ScheduleTemplateFormReceiver implements ScheduleTemplateHandler
          if(isUpdate(dateRule, wildcard.getDateRule()))
             wildcard.setDateRule(dateRule);
 
+         if(dateRule instanceof MutableDateRule)
+         {
+            MutableDateRule mRule = (MutableDateRule)dateRule;
+            wildcard.setWeekNumber(mRule.getWeek());
+         }
          setOccupiedPeriod(wildcard);
       }
       catch(WritePrivilegeException e)

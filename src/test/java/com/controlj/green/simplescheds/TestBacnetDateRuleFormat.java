@@ -39,16 +39,35 @@ public class TestBacnetDateRuleFormat extends TestCase
       expected.setDayRule(DayRule.LAST_OF_MONTH);
       assertEquals(expected, format.parse("2011/02/last"));
 
-      expected.setDay(3).setDayRule(DayRule.DAY_OF_WEEK);
-      assertEquals(expected, format.parse("2011/02/03 Sun"));
+      //if the day is fixed, the day of week should be variable
+      expected.setDay(3).setDayRule(DayRule.FIXED);
+      assertEquals(expected, format.parse("2011/02/03 Mon"));
 
       expected.setDay(1).setDayRule(DayRule.DAY_OF_WEEK);
       expected.setDayOfWeek(DayOfWeek.MONDAY);
+      assertEquals(expected, format.parse("2011/02/Mon"));
+
+      expected.setWeek(1).setWeekRule(WeekRule.FIXED);
+      assertEquals(expected, format.parse("2011/02/1st Mon"));
+
+      expected.setWeek(2).setWeekRule(WeekRule.FIXED);
+      assertEquals(expected, format.parse("2011/02/2nd Mon"));
+
+      expected.setWeek(3).setWeekRule(WeekRule.FIXED);
+      assertEquals(expected, format.parse("2011/02/3rd Mon"));
+
+      expected.setWeek(4).setWeekRule(WeekRule.FIXED);
+      assertEquals(expected, format.parse("2011/02/4th Mon"));
+
+      expected.setWeekRule(WeekRule.LAST);
       assertEquals(expected, format.parse("2011/02/last Mon"));
 
+      expected.setDay(27).setDayRule(DayRule.FIXED);
+      assertEquals(expected, format.parse("2011/02/27"));
 
       expected.setYear(2011).setYearRule(YearRule.FIXED);
       expected.setMonth(Month.DECEMBER).setMonthRule(MonthRule.FIXED);
+      expected.setWeek(0).setWeekRule(WeekRule.ANY);
       expected.setDay(5).setDayRule(DayRule.FIXED);
       //should handle an out of bounds value gracefully
       assertEquals(expected, format.parse("2011/23/50"));
@@ -89,12 +108,34 @@ public class TestBacnetDateRuleFormat extends TestCase
       rule.setDay(1).setDayRule(DayRule.ANY);
       assertEquals("2011/02/*", formater.format(rule));
 
-      rule.setDayRule(DayRule.LAST_OF_MONTH);
+      rule.setDayRule(DayRule.LAST_OF_MONTH);                                                
       assertEquals("2011/02/last", formater.format(rule));
 
-      rule.setDayRule(DayRule.DAY_OF_WEEK);
-      rule.setDayOfWeek(DayOfWeek.MONDAY);
-      assertEquals("2011/02/* Mon", formater.format(rule));
+      rule.setDayOfWeek(DayOfWeek.MONDAY).setDayRule(DayRule.DAY_OF_WEEK);
+      assertEquals("2011/02/Mon", formater.format(rule));
+
+      rule.setWeek(1).setWeekRule(WeekRule.FIXED);
+      assertEquals("2011/02/1st Mon", formater.format(rule));
+      assertEquals("2011/02/1st Mon", formater.format(rule, rule.getWeek(), rule.getWeekRule()));
+
+      rule.setWeek(2).setWeekRule(WeekRule.FIXED);
+      assertEquals("2011/02/2nd Mon", formater.format(rule));
+      assertEquals("2011/02/2nd Mon", formater.format(rule, rule.getWeek(), rule.getWeekRule()));
+
+      rule.setWeek(3).setWeekRule(WeekRule.FIXED);
+      assertEquals("2011/02/3rd Mon", formater.format(rule));
+      assertEquals("2011/02/3rd Mon", formater.format(rule, rule.getWeek(), rule.getWeekRule()));
+
+      rule.setWeek(4).setWeekRule(WeekRule.FIXED);
+      assertEquals("2011/02/4th Mon", formater.format(rule));
+      assertEquals("2011/02/4th Mon", formater.format(rule, rule.getWeek(), rule.getWeekRule()));
+
+      rule.setWeekRule(WeekRule.LAST);
+      assertEquals("2011/02/last Mon", formater.format(rule));
+      assertEquals("2011/02/last Mon", formater.format(rule, rule.getWeek(), rule.getWeekRule()));
+
+      rule.setDay(27).setDayRule(DayRule.FIXED);
+      assertEquals("2011/02/27", formater.format(rule));
    }
 
 
