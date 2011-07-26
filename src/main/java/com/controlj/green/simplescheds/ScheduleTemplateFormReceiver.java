@@ -1,9 +1,6 @@
 package com.controlj.green.simplescheds;
 
-import com.controlj.green.addonsupport.access.schedule.Schedule;
-import com.controlj.green.addonsupport.access.schedule.SchedulePeriod;
-import com.controlj.green.addonsupport.access.schedule.ScheduleTemplate;
-import com.controlj.green.addonsupport.access.schedule.ScheduleTemplateHandler;
+import com.controlj.green.addonsupport.access.schedule.*;
 import com.controlj.green.addonsupport.access.schedule.template.*;
 import com.controlj.green.addonsupport.access.value.WritePrivilegeException;
 import com.controlj.green.addonsupport.bacnet.data.datetime.*;
@@ -50,31 +47,16 @@ public class ScheduleTemplateFormReceiver implements ScheduleTemplateHandler
       return newValue!=null && !newValue.equals(oldValue);
    }
 
-   public void setOccupiedPeriod(ScheduleTemplate schedule) throws WritePrivilegeException
+   public void setPeriod(ScheduleTemplate schedule) throws WritePrivilegeException
    {
       TimeRule start = createTimeRule(ScheduleTemplateFormGenerator.FIELD_START_TIME);
       TimeRule end = createTimeRule(ScheduleTemplateFormGenerator.FIELD_END_TIME);
 
-      SchedulePeriod period = getOccupiedPeriod(schedule.getPeriods());
-      if(period==null)
-      {
-         if(start==null)
-           start = new TimeRuleFactory().create(8, 0, 0);
-         if(end==null)
-           end = new TimeRuleFactory().create(17, 0, 0);
-         period = schedule.makePeriod().from(start.getHour(), start.getMinute()).to(end.getHour(), end.getMinute()).useValue(true);
-      }
-      else
-      {
-         if(start==null)
-           start = new TimeRuleFactory().create(period.getStartTime().toDate());
-         if(end==null)
-           end = new TimeRuleFactory().create(period.getEndTime().toDate());
-         period = schedule.makePeriod().from(start.getHour(), start.getMinute()).to(end.getHour(), end.getMinute()).useValue(true);
-      }
-      schedule.clearPeriods();
-      schedule.addPeriod(period);
+      SinglePeriodScheduler scheduler = new SinglePeriodScheduler(schedule);
+      scheduler.setSinglePeriod(start, end);
+      scheduler.saveTo(schedule);
    }
+
 
    protected DateRule createDateRule(String fieldName)
    {
@@ -133,20 +115,6 @@ public class ScheduleTemplateFormReceiver implements ScheduleTemplateHandler
       catch(ParseException e)
       {
          badValues.add(fieldName);
-      }
-      return null;
-   }
-
-   private SchedulePeriod getOccupiedPeriod(SortedSet<SchedulePeriod> periods)
-   {
-      for(SchedulePeriod period : periods)
-      {
-         if(period.getRawValue()!=null)
-         {
-            //Use the first non-null schedule period.
-            //This "Simple" scheduler will not handle more than one
-            return period;
-         }
       }
       return null;
    }
@@ -231,7 +199,7 @@ public class ScheduleTemplateFormReceiver implements ScheduleTemplateHandler
          if(isUpdate(dateRule, dated.getDateRule()))
             dated.setDateRule(dateRule);
 
-         setOccupiedPeriod(dated);
+         setPeriod(dated);
       }
       catch(WritePrivilegeException e)
       {
@@ -259,7 +227,7 @@ public class ScheduleTemplateFormReceiver implements ScheduleTemplateHandler
          Collection<DayOfWeek> daysOfWeek = updateDaysOfWeek(datedWeekly.getDaysOfWeek());
          datedWeekly.setDaysOfWeek(daysOfWeek);
 
-         setOccupiedPeriod(datedWeekly);
+         setPeriod(datedWeekly);
       }
       catch(WritePrivilegeException e)
       {
@@ -286,7 +254,7 @@ public class ScheduleTemplateFormReceiver implements ScheduleTemplateHandler
             }
          }
 
-         setOccupiedPeriod(dateList);
+         setPeriod(dateList);
       }
       catch(WritePrivilegeException e)
       {
@@ -311,7 +279,7 @@ public class ScheduleTemplateFormReceiver implements ScheduleTemplateHandler
          if(isUpdate(endDate, dateRange.getEndDate()))
             dateRange.setEndDate(endDate.toSimpleDate());
 
-         setOccupiedPeriod(dateRange);
+         setPeriod(dateRange);
       }
       catch(WritePrivilegeException e)
       {
@@ -331,7 +299,7 @@ public class ScheduleTemplateFormReceiver implements ScheduleTemplateHandler
          Collection<DayOfWeek> daysOfWeek = updateDaysOfWeek(weekly.getDaysOfWeek());
          weekly.setDaysOfWeek(daysOfWeek);
 
-         setOccupiedPeriod(weekly);
+         setPeriod(weekly);
       }
       catch(WritePrivilegeException e)
       {
@@ -357,7 +325,7 @@ public class ScheduleTemplateFormReceiver implements ScheduleTemplateHandler
             MutableDateRule mRule = (MutableDateRule)dateRule;
             wildcard.setWeekNumber(mRule.getWeek());
          }
-         setOccupiedPeriod(wildcard);
+         setPeriod(wildcard);
       }
       catch(WritePrivilegeException e)
       {
@@ -382,6 +350,8 @@ public class ScheduleTemplateFormReceiver implements ScheduleTemplateHandler
 
    public String getResponseString()
    {
+      if(hasPermissionsFailure())
+         return "<div class=\"big_error\">You don't have permission to modify schedules at this location</div>";
       return "";
    }
 }

@@ -28,8 +28,8 @@
        final String id = req.getParameter("id");
        final boolean stopAtEquipment = "true".equals(req.getParameter("stop_at_equipment"));
 
-       final String treeString = req.getParameter("type");
-
+       final String typeString = req.getParameter("type");
+       final String treeString = req.getParameter("tree");
        final PrintWriter writer = resp.getWriter();
 
        try {
@@ -40,21 +40,32 @@
                public void execute(@NotNull SystemAccess access) throws Exception {
 
                   SystemTree tree = determineBaseTreeType(treeString);
-
                    JSONArray jsonArray = new JSONArray();
                    boolean root = (id==null);
                    if (root)
                    {
                       Location rootLocation = access.getTree(tree).getRoot();
                       JSONObject json = createRootNode(rootLocation, stopAtEquipment, access);
-                      if (treeString.equals("schedule"))
+                      if (typeString.equals("schedule"))
                          addScheduleGroupRoot(json, access);
 
                       jsonArray.put(json);
                    }
                    else
                    {
-                      Location location = access.getTree(tree).resolve(id);
+                      Location location = null;
+                      try
+                      {
+                         location = access.getTree(tree).resolve(id);
+                      }
+                      catch(UnresolvableException e)
+                      {
+                         Location grpTreeRoot = access.getTree(SystemTree.Schedule_Group).getRoot();
+                         location = findLocationByWalking(grpTreeRoot, id);
+                         if(location==null)
+                            throw e;
+
+                      }
                       jsonArray = getChildArray(location, stopAtEquipment, access);
                    }
 
@@ -74,9 +85,24 @@
        }
        catch (ActionExecutionException e)
        {
-          writeErrorNode("Invalid Action", e, writer);
+          writeErrorNode("Invalid Action for tree "+treeString, e, writer);
        }
       return "";
+   }
+
+   //this method get around a bug with Tree.resolve
+   //it does not handle Schedule Group Directories
+   private Location findLocationByWalking(Location parent, String key)
+   {
+      for(Location location : parent.getChildren())
+      {
+         if(key.equals(location.getTransientLookupString()))
+            return location;
+         Location found = findLocationByWalking(location, key);
+         if(found!=null)
+            return found;
+      }
+      return null;
    }
 
    private void addScheduleGroupRoot(JSONObject json, SystemAccess access)
@@ -96,8 +122,6 @@
           tree = SystemTree.Network;
       } else if (treeString.equals("grp")) {
           tree = SystemTree.Schedule_Group;
-      } else if (treeString.equals("schedule")) {
-          tree = SystemTree.Geographic;
       } else {
           tree = SystemTree.Geographic;
       }
@@ -108,8 +132,7 @@
    {
       JSONArray arrayData = new JSONArray();
 
-      Collection<Location> children = location.getChildren();
-      System.out.println("for "+location.getDisplayPath()+" got "+children.size());
+      Collection<Location> children = location.getChildren(LocationSort.NATURAL);
       for (Location child : children)
       {
           JSONObject next = createNode(child, hasChildren(child, stopAtEquipment), access);
@@ -132,7 +155,7 @@
       JSONObject next = new JSONObject();
       next.put("title",getText(node));
       next.put("key", node.getTransientLookupString());
-      next.put("tree", node.getTree());
+      next.put("tree", getTreeName(node.getTree()));
       next.put("path", node.getDisplayPath());
 
       if(hasSchedules(node, access))
@@ -156,6 +179,17 @@
    private String getText(Location node)
    {
       return node.getDisplayName();
+   }
+
+   private String getTreeName(Tree tree)
+   {
+      String treeString = tree.toString().toLowerCase();
+      if(treeString.contains("nettree"))
+          return "net";
+      else if (treeString.contains("grptree"))
+          return "grp";
+      else
+          return "geo";
    }
 
    private String getIcon(Location node)
@@ -219,11 +253,11 @@
                break;
 
            case Group:
-               image = "group.gif";
+               image = "groups.gif";
                break;
 
            case Directory:
-               image = "folder.gif";
+               image = "dir.gif";
                break;
 
            default:
@@ -244,7 +278,7 @@
          String stack = sw.toString();
 
          JSONObject errorNode = new JSONObject();
-         errorNode.put("title", errorMessage);
+         errorNode.put("title", errorMessage+": "+e.getMessage());
          errorNode.put("icon", "ltError.gif");
          errorNode.put("tooltip", stack);
          errorNode.put("unselectable", "true");

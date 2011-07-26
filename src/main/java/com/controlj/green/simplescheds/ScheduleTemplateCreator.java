@@ -10,7 +10,7 @@ import com.controlj.green.addonsupport.bacnet.data.datetime.*;
 import javax.servlet.http.HttpServlet;
 import java.util.*;
 
-public class ScheduleTemplateCreator extends HttpServlet
+public class ScheduleTemplateCreator
 {
 
    public void deleteSchedule(Schedule schedule, Location currentLocation)
@@ -27,11 +27,11 @@ public class ScheduleTemplateCreator extends HttpServlet
       Date date = new Date();
       SimpleDate today = (SimpleDate)new DateRuleFactory().year(date.getYear()+1900).month(date.getMonth()).day(date.getDay()).create().toSimpleDate();
 
-
-      TimeRule am = new TimeRuleFactory().hour(8).create();
-      TimeRule pm = new TimeRuleFactory().hour(17).create();
       if(ScheduleTemplateFormGenerator.TYPE_CONTINUOUS.equals(templateStr))
       {
+         TimeRule am = new TimeRuleFactory().hour(0).create();
+         TimeRule pm = new TimeRuleFactory().hour(23).minute(59).create();
+
          Continuous cTemplate = factory.createContinuous(priority);
          cTemplate.setStartDate(today);
          cTemplate.setStartTime(am.toSimpleTime());
@@ -85,15 +85,11 @@ public class ScheduleTemplateCreator extends HttpServlet
          template = wcTemplate;
       }
 
-      if(!"continuous".equals(templateStr))
-      {
-         SchedulePeriod period = template.makePeriod().from(am.getHour(), am.getMinute()).to(pm.getHour(), pm.getMinute()).useValue(true);
-         template.addPeriod(period);
-      }
+      SinglePeriodScheduler scheduler = new SinglePeriodScheduler(template);
+      scheduler.setDefaultPeriod();
+      scheduler.saveTo(template);
 
       return currentLocation.getAspect(Schedulable.class).addSchedule(template);
 
    }
-
-
 }

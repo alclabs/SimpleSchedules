@@ -39,6 +39,12 @@ public class TestBacnetTimeRuleFormat extends TestCase
       expected.setHundredthRule(AnyRule.ANY);
       assertEquals(expected, format.parse("*:*:*:*"));
 
+      //special, 24 hr is translated as 0:00
+      //this is because a full day schedule is considered as being from (O:00 --> 0:00)
+      //by the Schedule API but we want to use the more clear (0:00 --> 24:00) time
+      MutableTimeRule special = new MutableTimeRule();
+      special.setHour(24);
+      assertEquals(special, format.parse("24:0:0:0"));
       try
       {
          format.parse("**:23");
@@ -86,6 +92,10 @@ public class TestBacnetTimeRuleFormat extends TestCase
 
       rule.setHundredthRule(AnyRule.ANY);
       assertEquals("*:*", formater.format(rule));
+
+      MutableTimeRule special = new MutableTimeRule();
+      special.setHour(24);
+      assertEquals("24:00", formater.format(special));
    }
 
 

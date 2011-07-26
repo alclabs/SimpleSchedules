@@ -24,9 +24,10 @@ public class MutableTimeRule implements TimeRule, SimpleTime
       return hour;
    }
 
-   public void setHour(int hour)
+   public MutableTimeRule setHour(int hour)
    {
       this.hour = hour;
+      return this;
    }
 
    @NotNull
@@ -36,9 +37,10 @@ public class MutableTimeRule implements TimeRule, SimpleTime
       return hourRule;
    }
 
-   public void setHourRule(AnyRule hourRule)
+   public MutableTimeRule setHourRule(AnyRule hourRule)
    {
       this.hourRule = hourRule;
+      return this;
    }
 
    @Override
@@ -47,9 +49,10 @@ public class MutableTimeRule implements TimeRule, SimpleTime
       return minute;
    }
 
-   public void setMinute(int minute)
+   public MutableTimeRule setMinute(int minute)
    {
       this.minute = minute;
+      return this;
    }
 
    @NotNull
@@ -59,9 +62,10 @@ public class MutableTimeRule implements TimeRule, SimpleTime
       return minuteRule;
    }
 
-   public void setMinuteRule(AnyRule minuteRule)
+   public MutableTimeRule setMinuteRule(AnyRule minuteRule)
    {
       this.minuteRule = minuteRule;
+      return this;
    }
 
    @Override
@@ -70,9 +74,10 @@ public class MutableTimeRule implements TimeRule, SimpleTime
       return second;
    }
 
-   public void setSecond(int second)
+   public MutableTimeRule setSecond(int second)
    {
       this.second = second;
+      return this;
    }
 
    @NotNull
@@ -82,9 +87,10 @@ public class MutableTimeRule implements TimeRule, SimpleTime
       return secondRule;
    }
 
-   public void setSecondRule(AnyRule secondRule)
+   public MutableTimeRule setSecondRule(AnyRule secondRule)
    {
       this.secondRule = secondRule;
+      return this;
    }
 
    @Override
@@ -93,9 +99,10 @@ public class MutableTimeRule implements TimeRule, SimpleTime
       return hundredth;
    }
 
-   public void setHundredth(int hundredth)
+   public MutableTimeRule setHundredth(int hundredth)
    {
       this.hundredth = hundredth;
+      return this;
    }
 
    @NotNull
@@ -105,9 +112,10 @@ public class MutableTimeRule implements TimeRule, SimpleTime
       return hundredthRule;
    }
 
-   public void setHundredthRule(AnyRule hundredthRule)
+   public MutableTimeRule setHundredthRule(AnyRule hundredthRule)
    {
       this.hundredthRule = hundredthRule;
+      return this;
    }
 
    @Override
@@ -176,5 +184,39 @@ public class MutableTimeRule implements TimeRule, SimpleTime
          factory.anyHundredth();
 
       return factory.create();
+   }
+
+   @Override
+   public boolean equals(Object o)
+   {
+      if(this==o) return true;
+      if(!(o instanceof MutableTimeRule)) return false;
+
+      MutableTimeRule that = (MutableTimeRule)o;
+
+      if(hour!=that.hour) return false;
+      if(hundredth!=that.hundredth) return false;
+      if(minute!=that.minute) return false;
+      if(second!=that.second) return false;
+      if(hourRule!=that.hourRule) return false;
+      if(hundredthRule!=that.hundredthRule) return false;
+      if(minuteRule!=that.minuteRule) return false;
+      if(secondRule!=that.secondRule) return false;
+
+      return true;
+   }
+
+   @Override
+   public int hashCode()
+   {
+      int result = hour;
+      result = 31*result+(hourRule!=null ? hourRule.hashCode() : 0);
+      result = 31*result+minute;
+      result = 31*result+(minuteRule!=null ? minuteRule.hashCode() : 0);
+      result = 31*result+second;
+      result = 31*result+(secondRule!=null ? secondRule.hashCode() : 0);
+      result = 31*result+hundredth;
+      result = 31*result+(hundredthRule!=null ? hundredthRule.hashCode() : 0);
+      return result;
    }
 }

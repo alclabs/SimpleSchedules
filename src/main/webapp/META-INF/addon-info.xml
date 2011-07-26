@@ -1,0 +1,6 @@
+<addon version="1">
+  <name>Simple Schedules</name>
+  <description>Provides a simple means of editing and updating schedules</description>
+  <version>1.2</version>
+  <vendor>ALC Labs</vendor>
+</addon>

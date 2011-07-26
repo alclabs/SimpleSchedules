@@ -34,9 +34,10 @@
   <script type='text/javascript'>
 
      var treeLocation =null;
+     var postMessage = "";
      function handlePostResponse(data)
      {
-        //$("#scheduleforms .changed").removeClass("changed");
+        postMessage = data;
         $('#scheduleforms').load("schedules?location_key="+treeLocation, bindForm);
      }
 
@@ -135,6 +136,9 @@
          {
             $('#scheduleforms').load("schedules?location_key="+treeLocation, bindForm);
          });
+
+        $('#sched_save_message_section').html(postMessage).delay(5000).fadeOut(1000);
+
      }
 
      function bindFormElements()
@@ -171,7 +175,8 @@
             
              initAjax: {
                  url: "jquery/dynatree/get_dynatree.jsp",
-                 data: { type:'schedule',
+                 data: { 
+                         type:'schedule',
                          stop_at_equipment:'true'
                        }
              },
@@ -182,6 +187,7 @@
                      data: {
                          id:dtnode.data.key,
                          type: 'schedule',
+                         tree: dtnode.data.tree,
                          stop_at_equipment:'true'
                      }
                  })
@@ -200,6 +206,7 @@
              {
                 treeLocation = node.data.key;
                 //$('#selection').text("Schedules at: "+node.data.path);
+                postMessage = "";
                 $('#scheduleforms').load("schedules?location_key="+node.data.key, bindForm);
              },
 

@@ -22,7 +22,6 @@
   --%>
 
 <%
-    System.out.println("About to log out");
     SingleSignOn.logout(request);
 %>
 <html>

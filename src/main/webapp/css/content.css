@@ -15,7 +15,8 @@ table { font-family: arial, helvetica; font-size:10pt; font-weight: normal; }
 .sched_cell     { padding-left:5px; vertical-align:middle; border-bottom: 1px solid #a6c9e2; }
 .schedule_bar_container { width:100%;  height:6px; line-height:4px; font-size:4px; }
 .schedule_bar { }
-.unoccupied { background: #888888 url(grey_gloss-line2.png) 50% 50% repeat-x; }
+.undefined  { background: #888888 url(grey_gloss-line2.png) 50% 50% repeat-x; }
+.unoccupied { background: #000000 url(black_gloss-line2.png) 50% 50% repeat-x; }
 .occupied   { background: #339933 url(green_gloss-line2.png) 50% 50% repeat-x;  }
 
 .sched_name     { }
@@ -27,10 +28,11 @@ table { font-family: arial, helvetica; font-size:10pt; font-weight: normal; }
 
 .sched_name_field  { width:150px; }
 .sched_date_field  { width:80px; }
-.sched_time_field  { width:35px; }
+.sched_time_field  { width:40px; }
 .sched_check_field { width:16px; }
 
 .sched_add_section         { text-align:left; padding-top:10px;}
+.sched_message { }
 .sched_save_cancel_section { text-align:right; padding-top:5px;}
 
 .sched_warning  { color: #CC5555; }

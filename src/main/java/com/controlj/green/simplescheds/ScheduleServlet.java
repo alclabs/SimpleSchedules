@@ -32,7 +32,7 @@ public class ScheduleServlet extends HttpServlet
             public void execute(@NotNull final WritableSystemAccess access) throws Exception
             {
                String locationKey = req.getParameter("location_key");
-               Location currentLocation = access.getTree(SystemTree.Geographic).resolve(locationKey);
+               Location currentLocation = findLocation(access, locationKey);
                ServletOutputStream out = resp.getOutputStream();
 
                boolean add = "true".equals(req.getParameter("add_schedule"));
@@ -43,7 +43,6 @@ public class ScheduleServlet extends HttpServlet
                   String templateStr = req.getParameter("template");
                   String priorityStr = req.getParameter("priority");
                   response = addSchedule(access, currentLocation, templateStr, priorityStr);
-                  out.println(response);
                }
                else
                {
@@ -65,8 +64,6 @@ public class ScheduleServlet extends HttpServlet
                   }
                }
                out.println(response);
-               String message = "Message: done posting";
-               out.println(message);
             }
          };
 
@@ -93,11 +90,15 @@ public class ScheduleServlet extends HttpServlet
       catch (ActionExecutionException e)
       {
          ServletOutputStream out = resp.getOutputStream();
-         out.println("<div class=\"big_error\">Failed to execute action:"+e.getMessage()+"</div>");
+         String message = e.getMessage();
+         if(e.getCause() instanceof WritePrivilegeException)
+           message = "No permission to modify schedules at this location";
+         out.println("<div class=\"big_error\">Failed to execute action:"+message+"</div>");
       }
       catch(Throwable t)
       {
-         resp.getOutputStream().println(t.getMessage());
+         ServletOutputStream out = resp.getOutputStream();
+         out.println("<div class=\"big_error\">Failed to execute action:"+t.getMessage()+"</div>");
          t.printStackTrace();
       }
    }
@@ -166,11 +167,11 @@ public class ScheduleServlet extends HttpServlet
             @Override
             public void execute(@NotNull SystemAccess access) throws Exception
             {
-                  ServletOutputStream out = resp.getOutputStream();
-                  String locationKey = req.getParameter("location_key");
-                  Location currentLocation = access.getTree(SystemTree.Geographic).resolve(locationKey);
+               ServletOutputStream out = resp.getOutputStream();
+               String locationKey = req.getParameter("location_key");
+               Location currentLocation = findLocation(access, locationKey);
 
-                  ScheduleCategory occupancy = getOccupancyCategory(access);
+               ScheduleCategory occupancy = getOccupancyCategory(access);
                   try
                   {
                      Map<String, Schedule> scheduleMap = generateScheduleMap(currentLocation, occupancy);
@@ -206,6 +207,37 @@ public class ScheduleServlet extends HttpServlet
          t.printStackTrace();
       }
 
+   }
+
+   private Location findLocation(SystemAccess access, String locationKey)
+         throws UnresolvableException
+   {
+      Location currentLocation = null;
+      try
+      {
+         currentLocation = access.getTree(SystemTree.Geographic).resolve(locationKey);
+      }
+      catch(UnresolvableException e)
+      {
+         Location grpTreeRoot = access.getTree(SystemTree.Schedule_Group).getRoot();
+         currentLocation = findLocationByWalking(grpTreeRoot, locationKey);
+         if(currentLocation==null)
+            throw e;
+      }
+      return currentLocation;
+   }
+
+   private Location findLocationByWalking(Location parent, String key)
+   {
+      for(Location location : parent.getChildren())
+      {
+         if(key.equals(location.getTransientLookupString()))
+            return location;
+         Location found = findLocationByWalking(location, key);
+         if(found!=null)
+            return found;
+      }
+      return null;
    }
 
    private ScheduleCategory getOccupancyCategory(SystemAccess access) throws Exception

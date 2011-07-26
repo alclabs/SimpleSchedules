@@ -1,9 +1,6 @@
 package com.controlj.green.simplescheds;
 
-import com.controlj.green.addonsupport.access.schedule.Schedule;
-import com.controlj.green.addonsupport.access.schedule.SchedulePeriod;
-import com.controlj.green.addonsupport.access.schedule.ScheduleTemplateHandler;
-import com.controlj.green.addonsupport.access.schedule.ScheduleViewPeriod;
+import com.controlj.green.addonsupport.access.schedule.*;
 import com.controlj.green.addonsupport.access.schedule.template.*;
 import com.controlj.green.addonsupport.bacnet.data.datetime.*;
 import org.jetbrains.annotations.NotNull;
@@ -83,7 +80,7 @@ public class ScheduleTemplateFormGenerator implements ScheduleTemplateHandler
    protected void createScheduleBar()
    {
       int last = 0;
-      Set<SchedulePeriod> periods = schedule.getTemplate().getPeriods();
+      SortedSet<SchedulePeriod> periods = schedule.getTemplate().getPeriods();
       append("<table class=\"schedule_bar_container\" cellspacing='0' cellpadding='0'><tr>");
       if(schedule.getTemplate() instanceof Continuous)
       {
@@ -92,23 +89,29 @@ public class ScheduleTemplateFormGenerator implements ScheduleTemplateHandler
       }
       else
       {
-         for(SchedulePeriod period : periods)
-         {
-            int start = getTimeInMinutes(period.getStartTime().toDate());
-            int end = getTimeInMinutes(period.getEndTime().toDate());
-            //handle unoccupied period
-            if(last<start)
-               createScheduleBand(start-last, "unoccupied");
+            for(SchedulePeriod period : periods)
+            {
+               int start = getTimeInMinutes(period.getStartTime().toDate());
+               int end = getTimeInMinutes(period.getEndTime().toDate());
+               //handle undefined periods
+               if(last<start)
+                  createScheduleBand(start-last, "undefined");
 
-            //handle occupied period
-            createScheduleBand(end-start, "occupied");
-            last=end;
-         }
+               //special, 0:00 is translated as 24 hr, but ONLY for end times
+               //this is because a full day schedule is considered as being from (O:00 --> 0:00)
+               //by the Schedule API but we want to use the more clear (0:00 --> 24:00) time
+               if(end==0)
+                 end=daysWorthOfMinutes;
+
+               //handle occupied/unoccupied periods
+               createScheduleBand(end-start, Boolean.TRUE.equals(period.getValue().getValue())?"occupied":"unoccupied");
+               last=end;
+            }
       }
 
       //handle the last unoccupied period, if any
       if(last<daysWorthOfMinutes)
-         createScheduleBand(daysWorthOfMinutes-last, "unoccupied");
+         createScheduleBand(daysWorthOfMinutes-last, "undefined");
 
       append("</tr></table>\n");
    }
@@ -203,26 +206,35 @@ public class ScheduleTemplateFormGenerator implements ScheduleTemplateHandler
       return "<input class='check_field' type='checkbox' name='"+createFieldName(day.name())+"' "+(checked?"checked":"")+"/>";
    }
 
-   protected void addPeriodFormElements(SortedSet<SchedulePeriod> periods)
+   protected void addPeriodFormElements(ScheduleTemplate schedule)
    {
-      SchedulePeriod occupied = getOccupiedPeriod(periods);
-      SimpleTime start = occupied.getStartTime();
-      SimpleTime end = occupied.getEndTime();
-      if(occupied==null)
+      SinglePeriodScheduler scheduler = new SinglePeriodScheduler(schedule);
+      SchedulePeriod period = scheduler.getSinglePeriod();
+
+      SimpleTime start = null;
+      SimpleTime end = null;
+      if(period==null)
       {
-         start = new SimpleTimeFactory().create(8, 0, 0, 0);
-         end = new SimpleTimeFactory().create(17, 0, 0 ,0);
+         start = new SimpleTimeFactory().create(0, 0, 0, 0);
+         end = new SimpleTimeFactory().create(0, 0, 0 ,0);
       }
       else
       {
-         start = occupied.getStartTime();
-         end = occupied.getEndTime();
+         start = period.getStartTime();
+         end = period.getEndTime();
+         int minutes = getTimeInMinutes(end.toDate());
+
+         //special, 0:00 is translated as 24 hr, but ONLY for end times
+         //this is because a full day schedule is considered as being from (O:00 --> 0:00)
+         //by the Schedule API but we want to use the more clear (0:00 --> 24:00) time
+         if(minutes==0)
+            end = new MutableTimeRule().setHour(24);
       }
       append("  <nobr>").append(createTimeField(FIELD_START_TIME, start));
       append("\n  to ").append(createTimeField(FIELD_END_TIME, end)).append("</nobr>\n");
-      if(isMultipleSchedulePeriods(periods))
+      if(scheduler.isMultiplePeriods())
       {
-         append("<br/><span class=\"sched_warning\">Saving will clear the ( "+(periods.size()-1)+" ) other time segments.</span>");
+         append("<br/><span class=\"sched_warning\">Saving will clear the other occupied periods.</span>");
       }
    }
 
@@ -264,7 +276,7 @@ public class ScheduleTemplateFormGenerator implements ScheduleTemplateHandler
       addDateRules(dated.getDateRule(), null, null, null);
       endCell();
       beginCell("sched_period");
-      addPeriodFormElements(dated.getPeriods());
+      addPeriodFormElements(dated);
       createScheduleBar();
       endCell();
       endSchedule();
@@ -279,7 +291,7 @@ public class ScheduleTemplateFormGenerator implements ScheduleTemplateHandler
       addDaysOfWeek(datedWeekly.getDaysOfWeek());
       endCell();
       beginCell("sched_period");
-      addPeriodFormElements(datedWeekly.getPeriods());
+      addPeriodFormElements(datedWeekly);
       createScheduleBar();
       endCell();
       endSchedule();
@@ -293,7 +305,7 @@ public class ScheduleTemplateFormGenerator implements ScheduleTemplateHandler
       addDateRules(datedList.getDateRuleList());
       endCell();
       beginCell("sched_period");
-      addPeriodFormElements(datedList.getPeriods());
+      addPeriodFormElements(datedList);
       createScheduleBar();
       endCell();
       endSchedule();
@@ -307,7 +319,7 @@ public class ScheduleTemplateFormGenerator implements ScheduleTemplateHandler
       addDateRules(dateRange.getStartDate(), dateRange.getStartDate());
       endCell();
       beginCell("sched_period");
-      addPeriodFormElements(dateRange.getPeriods());
+      addPeriodFormElements(dateRange);
       createScheduleBar();
       endCell();
       endSchedule();
@@ -321,7 +333,7 @@ public class ScheduleTemplateFormGenerator implements ScheduleTemplateHandler
       addDaysOfWeek(weekly.getDaysOfWeek());
       endCell();
       beginCell("sched_period");
-      addPeriodFormElements(weekly.getPeriods());
+      addPeriodFormElements(weekly);
       createScheduleBar();
       endCell();
       endSchedule();
@@ -335,41 +347,10 @@ public class ScheduleTemplateFormGenerator implements ScheduleTemplateHandler
       addWildCardRule(wildcard.getDateRule(), wildcard.getWeekRule());
       endCell();
       beginCell("sched_period");
-      addPeriodFormElements(wildcard.getPeriods());
+      addPeriodFormElements(wildcard);
       createScheduleBar();
       endCell();
       endSchedule();
-   }
-
-   private SchedulePeriod getOccupiedPeriod(SortedSet<SchedulePeriod> periods)
-   {
-      for(SchedulePeriod period : periods)
-      {
-         if(period.getRawValue()!=null)
-         {
-            //Use the first non-null schedule period.
-            //This "Simple" scheduler will not handle more than one
-            return period;
-         }
-      }
-      return null;
-   }
-
-   private boolean isMultipleSchedulePeriods(SortedSet<SchedulePeriod> periods)
-   {
-      SchedulePeriod occupied = null;
-      for(SchedulePeriod period : periods)
-      {
-         if(period.getRawValue()!=null)
-         {
-            //if we have already found a non-null period, this schedule is too complicated to edit using this "Simple" scheduler
-            if(occupied!=null)
-               return true;
-            else
-               occupied = period;
-         }
-      }
-      return false;
    }
 
    private String toDateString(DateRule dateRule)
@@ -397,6 +378,7 @@ public class ScheduleTemplateFormGenerator implements ScheduleTemplateHandler
       long last = 0;
       long totalOccupiedTime = 0;
       ScheduleViewPeriod period = future.next();
+      int count= 0;
       while(period!=null && last<nextYear.getTime())
       {
          long start = period.getStartDateTimeInMillis();
@@ -415,9 +397,10 @@ public class ScheduleTemplateFormGenerator implements ScheduleTemplateHandler
          }
 
          //avoid an endless loop
-         if(last==end)
+         if(last==end && count>365)
            break;
 
+         count++;
          last=end;
          period = future.next();
       }

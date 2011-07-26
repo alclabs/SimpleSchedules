@@ -93,6 +93,7 @@ public class ScheduleListHtmlGenerator
       out.println("    <input type='button' class='sched_submit' id='sched_save_down_button'  value='Save and Download' />\n");
       out.println("    <input type='button' class='sched_submit' id='sched_cancel_button' value='Cancel' />\n");
       out.println("</div>\n");
+      out.println("<div class=\"sched_message\" id=\"sched_save_message_section\">&nbsp;</div>\n");
    }
 
    private void createTemplateDialog(String priority, String label, ServletOutputStream out)

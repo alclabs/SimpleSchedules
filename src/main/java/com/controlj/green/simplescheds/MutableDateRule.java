@@ -219,4 +219,40 @@ public class MutableDateRule implements DateRule, SimpleDate
 
       return factory.create();
    }
+
+   @Override
+   public boolean equals(Object o)
+   {
+      if(this==o) return true;
+      if(!(o instanceof MutableDateRule)) return false;
+
+      MutableDateRule that = (MutableDateRule)o;
+
+      if(day!=that.day) return false;
+      if(week!=that.week) return false;
+      if(year!=that.year) return false;
+      if(dayOfWeek!=that.dayOfWeek) return false;
+      if(dayRule!=that.dayRule) return false;
+      if(month!=that.month) return false;
+      if(monthRule!=that.monthRule) return false;
+      if(weekRule!=that.weekRule) return false;
+      if(yearRule!=that.yearRule) return false;
+
+      return true;
+   }
+
+   @Override
+   public int hashCode()
+   {
+      int result = year;
+      result = 31*result+(yearRule!=null ? yearRule.hashCode() : 0);
+      result = 31*result+(month!=null ? month.hashCode() : 0);
+      result = 31*result+(monthRule!=null ? monthRule.hashCode() : 0);
+      result = 31*result+day;
+      result = 31*result+(dayRule!=null ? dayRule.hashCode() : 0);
+      result = 31*result+(dayOfWeek!=null ? dayOfWeek.hashCode() : 0);
+      result = 31*result+week;
+      result = 31*result+(weekRule!=null ? weekRule.hashCode() : 0);
+      return result;
+   }
 }
